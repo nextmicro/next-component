@@ -128,7 +128,7 @@ func (c *component) connect(name string, cfg *Options) (redis.UniversalClient, e
 	if !cfg.DisableMetric {
 		cfg.Hooks = append(cfg.Hooks, metrics.NewMetricHook(
 			metrics.WithName(name),
-			metrics.WithAddr(cfg.Address)),
+			metrics.WithAddr(strings.Join(cfg.Addrs, ","))),
 		)
 	}
 	if !cfg.DisableLogging {
@@ -140,16 +140,30 @@ func (c *component) connect(name string, cfg *Options) (redis.UniversalClient, e
 	}
 
 	client := redis.NewUniversalClient(&redis.UniversalOptions{
-		Addrs:        cfg.Address,
-		Password:     cfg.Password,
-		DB:           cfg.DB,
-		MaxRetries:   cfg.MaxRetries,
-		DialTimeout:  cfg.DialTimeout,
-		ReadTimeout:  cfg.ReadTimeout,
-		WriteTimeout: cfg.WriteTimeout,
-		PoolSize:     cfg.PoolSize,
-		MinIdleConns: cfg.MinIdleConns,
-		IdleTimeout:  cfg.IdleTimeout,
+		Addrs:                 cfg.Addrs,
+		ClientName:            cfg.ClientName,
+		DB:                    cfg.DB,
+		Username:              cfg.Username,
+		Password:              cfg.Password,
+		SentinelUsername:      cfg.Username,
+		SentinelPassword:      cfg.Password,
+		MaxRetries:            cfg.MaxRetries,
+		MinRetryBackoff:       cfg.MinRetryBackoff,
+		MaxRetryBackoff:       cfg.MaxRetryBackoff,
+		DialTimeout:           cfg.DialTimeout,
+		ReadTimeout:           cfg.ReadTimeout,
+		WriteTimeout:          cfg.WriteTimeout,
+		ContextTimeoutEnabled: true,
+		PoolFIFO:              cfg.PoolFIFO,
+		PoolSize:              cfg.PoolSize,
+		PoolTimeout:           cfg.PoolTimeout,
+		MinIdleConns:          cfg.MinIdleConns,
+		MaxIdleConns:          cfg.MaxIdleConns,
+		MaxRedirects:          cfg.MaxRetries,
+		ReadOnly:              cfg.ReadOnly,
+		RouteByLatency:        cfg.RouteByLatency,
+		RouteRandomly:         cfg.RouteRandomly,
+		MasterName:            cfg.MasterName,
 	})
 
 	for _, h := range cfg.Hooks {

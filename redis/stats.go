@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	prom "github.com/go-kratos/kratos/contrib/metrics/prometheus/v2"
@@ -36,12 +37,13 @@ func (s *Stat) Run(ctx context.Context) {
 				name := key.(string)
 				obj := val.(*redis.Client)
 				stats := obj.PoolStats()
-				s.stats.With(namespace, name, Redis.opts[name].Address, "hits").Set(float64(stats.Hits))
-				s.stats.With(namespace, name, Redis.opts[name].Address, "misses").Set(float64(stats.Misses))
-				s.stats.With(namespace, name, Redis.opts[name].Address, "timeouts").Set(float64(stats.Timeouts))
-				s.stats.With(namespace, name, Redis.opts[name].Address, "total_conns").Set(float64(stats.TotalConns))
-				s.stats.With(namespace, name, Redis.opts[name].Address, "idle_conns").Set(float64(stats.IdleConns))
-				s.stats.With(namespace, name, Redis.opts[name].Address, "stale_conns").Set(float64(stats.StaleConns))
+				addrs := strings.Join(Redis.opts[name].Addrs, ",")
+				s.stats.With(namespace, name, addrs, "hits").Set(float64(stats.Hits))
+				s.stats.With(namespace, name, addrs, "misses").Set(float64(stats.Misses))
+				s.stats.With(namespace, name, addrs, "timeouts").Set(float64(stats.Timeouts))
+				s.stats.With(namespace, name, addrs, "total_conns").Set(float64(stats.TotalConns))
+				s.stats.With(namespace, name, addrs, "idle_conns").Set(float64(stats.IdleConns))
+				s.stats.With(namespace, name, addrs, "stale_conns").Set(float64(stats.StaleConns))
 				return true
 			})
 		}

@@ -19,24 +19,40 @@ func (fn OptionFunc) apply(cfg *Options) {
 }
 
 type Options struct {
-	Addrs                 []string      `json:"addrs"`                   // 单个地址或者集群地址
-	ClientName            string        `json:"client_name"`             // ClientName 将为每个 conn 执行 `CLIENT SETNAME ClientName` 命令
-	Password              string        `json:"password"`                // Password 密码
-	DB                    int           `json:"db"`                      // DB，默认为0, 一般应用不推荐使用DB分片
-	PoolSize              int           `json:"pool_size"`               // PoolSize 集群内每个节点的最大连接池限制 默认每个CPU10个连接
-	MaxRetries            int           `json:"max_retries"`             // MaxRetries 网络相关的错误最大重试次数 默认5次
-	MinIdleConns          int           `json:"min_idle_conns"`          // MinIdleConns 最小空闲连接数 默认20个
-	DialTimeout           time.Duration `json:"dial_timeout"`            // DialTimeout 拨超时时间
-	ReadTimeout           time.Duration `json:"read_timeout"`            // ReadTimeout 读超时
-	WriteTimeout          time.Duration `json:"write_timeout"`           // WriteTimeout 写超时
-	IdleTimeout           time.Duration `json:"idle_timeout"`            // IdleTimeout 连接最大空闲时间，默认60s, 超过该时间，连接会被主动关闭
-	SlowThreshold         time.Duration `json:"slow_threshold"`          // 慢日志门限值，超过该门限值的请求，将被记录到慢日志中
-	DisableMetric         bool          `json:"disable_metric"`          // 禁用监控，默认开启
-	DisableTrace          bool          `json:"disable_trace"`           // 禁用链路，默认开启
-	DisableLogging        bool          `json:"disable_logging"`         // 禁用链路，记录请求数据
-	EnableLoggingRequest  bool          `json:"enable_logging_request"`  // 是否开启记录请求参数
-	EnableLoggingResponse bool          `json:"enable_logging_response"` // 是否开启记录响应参数
-	Hooks                 []redis.Hook  `json:"-"`                       // redis钩子
+	Addrs           []string      `json:"addrs"`             // 单个地址或者集群地址
+	ClientName      string        `json:"client_name"`       // ClientName 将为每个 conn 执行 `CLIENT SETNAME ClientName` 命令
+	Username        string        `json:"username"`          // 用户名
+	Password        string        `json:"password"`          // Password 密码
+	DB              int           `json:"db"`                // DB，默认为0, 一般应用不推荐使用DB分片
+	PoolFIFO        bool          `json:"pool_fifo"`         // 每个节点连接池GETPUT使用先进先出模式（默认LIFO）
+	PoolSize        int           `json:"pool_size"`         // PoolSize 集群内每个节点的最大连接池限制 默认每个CPU10个连接
+	PoolTimeout     time.Duration `json:"pool_timeout"`      // 连接池超时时间
+	MaxRetries      int           `json:"max_retries"`       // MaxRetries 网络相关的错误最大重试次数 默认5次
+	MinRetryBackoff time.Duration `json:"min_retry_backoff"` // 网络相关的错误最小重试时间
+	MaxRetryBackoff time.Duration `json:"max_retry_backoff"` // 网络相关的错误最大重试时间
+	MinIdleConns    int           `json:"min_idle_conns"`    // MinIdleConns 最小空闲连接数 默认20个
+	MaxIdleConns    int           `json:"max_idle_conns"`    // 最大空闲连接数
+	DialTimeout     time.Duration `json:"dial_timeout"`      // DialTimeout 拨超时时间
+	ReadTimeout     time.Duration `json:"read_timeout"`      // ReadTimeout 读超时
+	WriteTimeout    time.Duration `json:"write_timeout"`     // WriteTimeout 写超时
+	IdleTimeout     time.Duration `json:"idle_timeout"`      // IdleTimeout 连接最大空闲时间，默认60s, 超过该时间，连接会被主动关闭
+	SlowThreshold   time.Duration `json:"slow_threshold"`    // 慢日志门限值，超过该门限值的请求，将被记录到慢日志中
+	// Only cluster clients.
+	ReadOnly       bool `json:"read_only"`        // 在从节点上启用只读命令
+	RouteByLatency bool `json:"route_by_latency"` // 允许将只读命令路由到最近的主节点或从节点。它会自动启用只读
+	RouteRandomly  bool `json:"route_randomly"`   // 允许将只读命令路由到随机主节点或从节点。它会自动启用只读
+
+	// The sentinel master name.
+	// Only failover clients.
+
+	MasterName string `json:"master_name"` // 主节点名称
+
+	DisableMetric         bool         `json:"disable_metric"`          // 禁用监控，默认开启
+	DisableTrace          bool         `json:"disable_trace"`           // 禁用链路，默认开启
+	DisableLogging        bool         `json:"disable_logging"`         // 禁用链路，记录请求数据
+	EnableLoggingRequest  bool         `json:"enable_logging_request"`  // 是否开启记录请求参数
+	EnableLoggingResponse bool         `json:"enable_logging_response"` // 是否开启记录响应参数
+	Hooks                 []redis.Hook `json:"-"`                       // redis钩子
 }
 
 const (
@@ -59,8 +75,8 @@ func WithConfig(cfg Options) loader.Option {
 // Options returns the redis config.
 func (o *Options) Options() []Option {
 	opts := make([]Option, 0, 10)
-	if o.Address != "" {
-		opts = append(opts, WithAddress(o.Address))
+	if len(o.Addrs) > 0 {
+		opts = append(opts, WithAddress(o.Addrs))
 	}
 	if o.Password != "" {
 		opts = append(opts, WithPassword(o.Password))
@@ -114,9 +130,9 @@ func (o *Options) Options() []Option {
 }
 
 // WithAddress 设置地址
-func WithAddress(address string) Option {
+func WithAddress(addrs []string) Option {
 	return OptionFunc(func(cfg *Options) {
-		cfg.Address = address
+		cfg.Addrs = addrs
 	})
 }
 
