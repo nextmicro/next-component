@@ -12,5 +12,5 @@
 
 ## 开发文档
 
-组件库必须实现 `loader.Loader` 接口。实际 `loader.Loader` 接口是 milli `loader.Loader` 接口，传递参数参考
+组件库必须实现 `loader.Loader` 接口。实际 `loader.Loader` 接口是 NextMicro `loader.Loader` 接口，传递参数参考
 组件库的 `options.go` 实现。
