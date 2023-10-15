@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-volo/logger"
+	"github.com/nextmicro/logger"
 	"github.com/nextmicro/next-component/mongo/middleware"
 	"github.com/nextmicro/next-component/mongo/middleware/logging"
 	"github.com/nextmicro/next-component/mongo/middleware/metrics"
@@ -19,11 +19,11 @@ import (
 )
 
 var (
-	Mongo *component
-	_     loader.Loader = &component{}
+	Mongo *Component
+	_     loader.Loader = &Component{}
 )
 
-type component struct {
+type Component struct {
 	status        bool
 	defaultDBName string
 	options       []Option
@@ -31,15 +31,15 @@ type component struct {
 	clients       sync.Map
 }
 
-func New(options ...Option) *component {
-	Mongo = &component{
+func New(options ...Option) *Component {
+	Mongo = &Component{
 		options: options,
 		opts:    make(map[string]*Options),
 	}
 	return Mongo
 }
 
-func (c *component) Init(opts ...loader.Option) error {
+func (c *Component) Init(opts ...loader.Option) error {
 	err := config.Value(namespace).Scan(&Mongo.opts)
 	if err != nil {
 		return fmt.Errorf("redis: %s", err)
@@ -87,7 +87,7 @@ func (c *component) Init(opts ...loader.Option) error {
 	return nil
 }
 
-func (c *component) Instance(name ...string) *Database {
+func (c *Component) Instance(name ...string) *Database {
 	group := defaultName
 	if len(name) > 0 && name[0] != "" {
 		group = name[0]
@@ -102,7 +102,7 @@ func (c *component) Instance(name ...string) *Database {
 }
 
 // buildDns build dns.
-func (c *component) buildDns(cfg *Options) string {
+func (c *Component) buildDns(cfg *Options) string {
 	dns := fmt.Sprintf("mongodb://%s/%s?authSource=admin", cfg.Address, cfg.Database)
 	if cfg.Username != "" && cfg.Password != "" {
 		dns = fmt.Sprintf("mongodb://%s:%s@%s/%s?authSource=admin", cfg.Username, cfg.Password, cfg.Address, cfg.Database)
@@ -114,7 +114,7 @@ func (c *component) buildDns(cfg *Options) string {
 	return dns
 }
 
-func (c *component) connect(name string, cfg *Options) (*Client, error) {
+func (c *Component) connect(name string, cfg *Options) (*Client, error) {
 	if name == defaultName {
 		c.defaultDBName = cfg.Database
 	}
@@ -174,20 +174,20 @@ func (c *component) connect(name string, cfg *Options) (*Client, error) {
 	return cc, nil
 }
 
-func (c *component) Open() bool {
+func (c *Component) Open() bool {
 	return c.status
 }
 
-func (c *component) Start(ctx context.Context) error {
+func (c *Component) Start(ctx context.Context) error {
 	logger.Infof("Component [%s] Start success", c.String())
 	return nil
 }
 
-func (c *component) Watch() error {
+func (c *Component) Watch() error {
 	return nil
 }
 
-func (c *component) Stop(ctx context.Context) error {
+func (c *Component) Stop(ctx context.Context) error {
 	c.clients.Range(func(key, value interface{}) bool {
 		client := value.(*Client)
 		_ = client.Disconnect(ctx)
@@ -200,6 +200,6 @@ func (c *component) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (c *component) String() string {
+func (c *Component) String() string {
 	return namespace
 }

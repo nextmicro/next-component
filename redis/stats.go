@@ -7,7 +7,7 @@ import (
 
 	prom "github.com/go-kratos/kratos/contrib/metrics/prometheus/v2"
 	"github.com/go-kratos/kratos/v2/metrics"
-	"github.com/go-volo/logger"
+	"github.com/nextmicro/logger"
 	m "github.com/nextmicro/next/pkg/metrics"
 	"github.com/redis/go-redis/v9"
 )

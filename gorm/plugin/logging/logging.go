@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/go-volo/logger"
 	"github.com/nextmicro/gokit/timex"
+	"github.com/nextmicro/logger"
 	"gorm.io/gorm"
 	glogger "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"

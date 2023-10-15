@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-volo/logger"
 	"github.com/nextmicro/gokit/timex"
+	"github.com/nextmicro/logger"
 	"github.com/nextmicro/next-component/mongo/middleware"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

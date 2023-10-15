@@ -8,7 +8,7 @@ import (
 	"time"
 
 	prom "github.com/go-kratos/kratos/contrib/metrics/prometheus/v2"
-	"github.com/go-volo/logger"
+	"github.com/nextmicro/logger"
 	"github.com/nextmicro/next/pkg/metrics"
 	"go.opentelemetry.io/otel/codes"
 	"gorm.io/gorm"

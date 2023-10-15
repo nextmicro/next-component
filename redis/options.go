@@ -56,7 +56,7 @@ type Options struct {
 }
 
 const (
-	namespace   = "redis"
+	namespace   = "go-redis"
 	defaultName = "default"
 )
 

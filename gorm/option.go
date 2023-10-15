@@ -77,7 +77,7 @@ type DSN struct {
 }
 
 const (
-	namespace   = "mysql"
+	namespace   = "gorm"
 	defaultName = "default"
 )
 

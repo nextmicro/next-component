@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-volo/logger"
+	"github.com/nextmicro/logger"
 	"github.com/nextmicro/next-component/redis/hook/logging"
 	"github.com/nextmicro/next-component/redis/hook/metrics"
 	"github.com/nextmicro/next/config"
@@ -19,11 +19,11 @@ import (
 )
 
 var (
-	Redis *component
-	_     loader.Loader = &component{}
+	Redis *Component
+	_     loader.Loader = &Component{}
 )
 
-type component struct {
+type Component struct {
 	opts    map[string]*Options
 	open    bool
 	options []Option
@@ -31,8 +31,8 @@ type component struct {
 	clients sync.Map
 }
 
-func New(options ...Option) *component {
-	Redis = &component{
+func New(options ...Option) *Component {
+	Redis = &Component{
 		options: options,
 		opts:    make(map[string]*Options),
 	}
@@ -40,7 +40,7 @@ func New(options ...Option) *component {
 }
 
 // Init 初始化
-func (c *component) Init(opts ...loader.Option) error {
+func (c *Component) Init(opts ...loader.Option) error {
 	err := config.Value(namespace).Scan(&c.opts)
 	if err != nil {
 		return fmt.Errorf("redis: %s", err)
@@ -90,7 +90,7 @@ func (c *component) Init(opts ...loader.Option) error {
 	return nil
 }
 
-func (c *component) Instance(name ...string) redis.UniversalClient {
+func (c *Component) Instance(name ...string) redis.UniversalClient {
 	group := defaultName
 	if len(name) > 0 && name[0] != "" {
 		group = name[0]
@@ -112,7 +112,7 @@ func peerInfo(addr string) (hostname string, port int) {
 	return hostname, port
 }
 
-func (c *component) connect(name string, cfg *Options) (redis.UniversalClient, error) {
+func (c *Component) connect(name string, cfg *Options) (redis.UniversalClient, error) {
 	if cfg.PoolSize == 0 {
 		cfg.PoolSize = 10
 	}
@@ -184,22 +184,22 @@ func (c *component) connect(name string, cfg *Options) (redis.UniversalClient, e
 	return client, nil
 }
 
-func (c *component) Open() bool {
+func (c *Component) Open() bool {
 	return c.open
 }
 
-func (c *component) Start(ctx context.Context) error {
+func (c *Component) Start(ctx context.Context) error {
 	go c.stat.Run(ctx)
 
 	logger.Infof("Component [%s] Start success", c.String())
 	return nil
 }
 
-func (c *component) Watch() error {
+func (c *Component) Watch() error {
 	return nil
 }
 
-func (c *component) Stop(ctx context.Context) error {
+func (c *Component) Stop(ctx context.Context) error {
 	c.clients.Range(func(key, value interface{}) bool {
 		client := value.(*redis.Client)
 		_ = client.Close()
@@ -212,6 +212,6 @@ func (c *component) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (c *component) String() string {
+func (c *Component) String() string {
 	return namespace
 }

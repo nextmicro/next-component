@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/go-volo/logger"
+	"github.com/nextmicro/logger"
 	"github.com/nextmicro/next/config"
 	"github.com/nextmicro/next/runtime/loader"
 	nsq "github.com/nsqio/go-nsq"

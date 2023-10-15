@@ -7,7 +7,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/go-volo/logger"
 	"github.com/nextmicro/gokit/timex"
 	rediscmd "github.com/redis/go-redis/extra/rediscmd/v9"
 	"github.com/redis/go-redis/v9"

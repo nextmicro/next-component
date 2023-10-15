@@ -9,7 +9,7 @@ import (
 
 	"database/sql"
 
-	"github.com/go-volo/logger"
+	"github.com/nextmicro/logger"
 	"github.com/nextmicro/next-component/gorm/plugin/logging"
 	"github.com/nextmicro/next-component/gorm/plugin/metrics"
 	"github.com/nextmicro/next/config"
@@ -22,11 +22,11 @@ import (
 )
 
 var (
-	Gorm *component
-	_    loader.Loader = &component{}
+	Gorm *Component
+	_    loader.Loader = &Component{}
 )
 
-type component struct {
+type Component struct {
 	ctx      context.Context
 	cancelFn func()
 	init     bool
@@ -38,7 +38,7 @@ type component struct {
 // New creates mysql a new component
 func New(options ...Option) loader.Loader {
 	ctx, cancel := context.WithCancel(context.Background())
-	Gorm = &component{
+	Gorm = &Component{
 		ctx:      ctx,
 		cancelFn: cancel,
 		options:  options,
@@ -48,7 +48,7 @@ func New(options ...Option) loader.Loader {
 }
 
 // Init init mysql
-func (c *component) Init(opts ...loader.Option) error {
+func (c *Component) Init(opts ...loader.Option) error {
 	err := config.Value(namespace).Scan(&c.opts)
 	if err != nil {
 		return fmt.Errorf("gorm: %s", err)
@@ -98,7 +98,7 @@ func (c *component) Init(opts ...loader.Option) error {
 	return nil
 }
 
-func (c *component) Instance(name ...string) *gorm.DB {
+func (c *Component) Instance(name ...string) *gorm.DB {
 	group := defaultName
 	if len(name) > 0 && name[0] != "" {
 		group = name[0]
@@ -112,7 +112,7 @@ func (c *component) Instance(name ...string) *gorm.DB {
 	return value.(*gorm.DB)
 }
 
-func (c *component) connect(name string, cfg *Options) (*gorm.DB, error) {
+func (c *Component) connect(name string, cfg *Options) (*gorm.DB, error) {
 	if cfg.MaxIdleConns == 0 {
 		cfg.MaxIdleConns = 16
 	}
@@ -123,7 +123,7 @@ func (c *component) connect(name string, cfg *Options) (*gorm.DB, error) {
 		cfg.ConnMaxLifetime = 300 * time.Second
 	}
 	if cfg.SlowLogThreshold == 0 {
-		cfg.SlowLogThreshold = 500 * time.Millisecond
+		cfg.SlowLogThreshold = 300 * time.Millisecond
 	}
 
 	dsn := c.buildDns(cfg.Master)
@@ -192,7 +192,7 @@ func (c *component) connect(name string, cfg *Options) (*gorm.DB, error) {
 	return client, nil
 }
 
-func (c *component) buildSlaves(dns []DSN) []gorm.Dialector {
+func (c *Component) buildSlaves(dns []DSN) []gorm.Dialector {
 	ret := make([]gorm.Dialector, 0, len(dns))
 	for _, item := range dns {
 		dsn := c.buildDns(item)
@@ -201,7 +201,7 @@ func (c *component) buildSlaves(dns []DSN) []gorm.Dialector {
 	return ret
 }
 
-func (c *component) buildDns(dns DSN) string {
+func (c *Component) buildDns(dns DSN) string {
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s&parseTime=True&loc=%s",
 		dns.Username,
 		dns.Password,
@@ -212,7 +212,7 @@ func (c *component) buildDns(dns DSN) string {
 	)
 }
 
-func (c *component) Start(ctx context.Context) error {
+func (c *Component) Start(ctx context.Context) error {
 	if !c.init {
 		return nil
 	}
@@ -221,11 +221,11 @@ func (c *component) Start(ctx context.Context) error {
 	return nil
 }
 
-func (c *component) Watch() error {
+func (c *Component) Watch() error {
 	return nil
 }
 
-func (c *component) Stop(ctx context.Context) error {
+func (c *Component) Stop(ctx context.Context) error {
 	if !c.init {
 		return nil
 	}
@@ -255,6 +255,6 @@ func (c *component) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (c *component) String() string {
-	return "gorm"
+func (c *Component) String() string {
+	return namespace
 }
