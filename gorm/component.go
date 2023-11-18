@@ -144,7 +144,10 @@ func (c *Component) connect(name string, cfg *Options) (*gorm.DB, error) {
 
 	// tracing
 	if !cfg.DisableTrace {
-		err = client.Use(otelgorm.NewPlugin(otelgorm.WithAttributes()))
+		err = client.Use(otelgorm.NewPlugin(
+			otelgorm.WithAttributes(),
+			otelgorm.WithDBName(cfg.Master.Database),
+		))
 		if err != nil {
 			return nil, err
 		}
